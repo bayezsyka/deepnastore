@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Modal from "./components/Modal";
-import { CATALOG, type CatalogItem } from "./data/catalog";
+import { CATALOG, type CatalogItem } from "./data/catalog.ts";
 import { TNC_TEXT, GARANSI_TEXT } from "./data/policies";
 
 const SELLER_WA = "6285779002785"; // ganti nomor WA seller (tanpa +)
@@ -18,9 +18,107 @@ function waLinkFor(itemName: string) {
   return `https://wa.me/${SELLER_WA}?text=${text}`;
 }
 
+// Helper to get logo URL for apps
+function getLogoUrl(appName: string): string {
+  const name = appName.toLowerCase().trim();
+
+  const domainMap: Record<string, string> = {
+    // (pakai domainMap kamu yang sekarang)
+    netflix: "netflix.com",
+    vidio: "vidio.com",
+    loklok: "loklok.tv",
+    "rcti+": "rctiplus.com",
+    "vision+": "visionplus.id",
+    viki: "viki.com",
+    reelshort: "reelshort.com",
+    "klik film": "klikfilm.com",
+    "disney+": "disneyplus.com",
+    wetv: "wetv.vip",
+    "prime video": "primevideo.com",
+    "hbo go & hbo max": "hbomax.com",
+    youko: "youku.com",
+    bstation: "bilibili.tv",
+    iqiyi: "iq.com",
+    crunchyroll: "crunchyroll.com",
+    viu: "viu.com",
+    catchplay: "catchplay.com",
+    iflix: "iflix.com",
+    "mango tv": "mgtv.com",
+    sushiroll: "sushiroll.co",
+    genflix: "genflix.co.id",
+    dramabox: "dramabox.com",
+    shortmax: "shortmax.com",
+    "short short": "shortshortapp.com",
+    flickreels: "flickreels.com",
+
+    chatgpt: "openai.com",
+    duolinggo: "duolingo.com",
+    grammarly: "grammarly.com",
+    "wps office": "wps.com",
+    deepl: "deepl.com",
+    quillbot: "quillbot.com",
+    "ms 365": "microsoft.com",
+    goodnotes: "goodnotes.com",
+    "scite ai": "scite.ai",
+    "claude ai": "anthropic.com",
+    medium: "medium.com",
+    "i love pdf": "ilovepdf.com",
+    camscanner: "camscanner.com",
+    "humata ai": "humata.ai",
+    perplexity: "perplexity.ai",
+    turnitin: "turnitin.com",
+    freepik: "freepik.com",
+    scribd: "scribd.com",
+    wattpad: "wattpad.com",
+    chatpdf: "chatpdf.com",
+    blinkist: "blinkist.com",
+    "google one": "one.google.com",
+    kahoot: "kahoot.com",
+    quiziz: "quizizz.com",
+    gdrive: "drive.google.com",
+    statista: "statista.com",
+    notion: "notion.so",
+    quizlet: "quizlet.com",
+    zoom: "zoom.us",
+    "gpt zero": "gptzero.me",
+
+    canva: "canva.com",
+    capcut: "capcut.com",
+    picsart: "picsart.com",
+    lightroom: "adobe.com",
+    photoshop: "adobe.com",
+    "premiere pro": "adobe.com",
+    filmora: "filmora.wondershare.com",
+    "after effects": "adobe.com",
+    vsco: "vsco.co",
+    remini: "remini.ai",
+    inshot: "inshot.com",
+    kinemaster: "kinemaster.com",
+    videoleap: "videoleapapp.com",
+    vn: "vlognow.me",
+
+    spotify: "spotify.com",
+    "apple music": "music.apple.com",
+    "youtube music": "music.youtube.com",
+    joox: "joox.com",
+    resso: "resso.com",
+    soundcloud: "soundcloud.com",
+    tidal: "tidal.com",
+    deezer: "deezer.com",
+  };
+
+  const domain = domainMap[name];
+  if (!domain) return "";
+
+  // ICON (PNG) — request cuma ke Google
+  return `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(domain)}`;
+}
+
+
 export default function Home() {
   const [tncOpen, setTncOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<CatalogItem | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -35,82 +133,148 @@ export default function Home() {
     })).filter((sec) => sec.items.length > 0);
   }, [query]);
 
+  const handleSearchToggle = () => {
+    const newSearchState = !searchOpen;
+    setSearchOpen(newSearchState);
+    
+    if (!newSearchState) {
+      setQuery("");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FEEAC9] via-[#FFCDC9] to-[#FD7979]/20">
-      {/* NAVBAR - Transparent & Minimalist */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/10 border-b border-white/20">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
-          {/* Mobile: Hide links, Desktop: Show all */}
-          <div className="hidden md:flex flex-wrap items-center gap-4 lg:gap-6 text-xs lg:text-sm font-semibold">
-            <button 
-              onClick={() => setTncOpen(true)} 
-              className="text-[#FD7979] hover:text-[#FD7979]/80 transition-all duration-300 hover:scale-105 whitespace-nowrap"
+      {/* NAVBAR - Floating & Minimalist */}
+      <nav className="fixed top-4 left-4 right-4 z-50 transition-all duration-500">
+        <div 
+          className={`mx-auto max-w-6xl rounded-full backdrop-blur-xl bg-white/40 border border-white/60 shadow-2xl transition-all duration-500 ${
+            searchOpen ? 'bg-white/95 shadow-[0_8px_32px_rgba(253,121,121,0.3)]' : ''
+          }`}
+        >
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3">
+            {/* Left side - Brand & Links */}
+            <div 
+              className={`flex items-center gap-3 sm:gap-4 lg:gap-6 transition-all duration-500 ${
+                searchOpen ? 'opacity-0 scale-95 pointer-events-none absolute' : 'opacity-100 scale-100'
+              }`}
             >
-              TNC & Garansi
-            </button>
-
-            {CATALOG.map((s) => (
+              {/* Brand */}
               <button
-                key={s.id}
-                onClick={() => scrollToId(s.id)}
-                className="text-[#FD7979] hover:text-[#FD7979]/80 transition-all duration-300 hover:scale-105 whitespace-nowrap"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="text-base sm:text-lg font-bold text-[#FD7979] whitespace-nowrap hover:scale-105 transition-transform duration-300"
               >
-                {s.label}
+                Deepna Store
               </button>
-            ))}
-          </div>
 
-          {/* Mobile: Show brand name */}
-          <div className="md:hidden text-lg font-bold text-[#FD7979]">
-            Deepna Store
-          </div>
+              {/* Desktop Links */}
+              <div className="hidden lg:flex items-center gap-4 text-xs font-semibold">
+                <button 
+                  onClick={() => setTncOpen(true)} 
+                  className="text-[#FD7979]/80 hover:text-[#FD7979] transition-all duration-300 hover:scale-105 whitespace-nowrap"
+                >
+                  TNC & Garansi
+                </button>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            {searchOpen && (
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cari aplikasi..."
-                className="w-32 sm:w-48 rounded-full bg-white/90 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-800 placeholder:text-gray-400 outline-none shadow-lg transition-all duration-300"
-                autoFocus
-              />
+                {CATALOG.slice(0, 3).map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => scrollToId(s.id)}
+                    className="text-[#FD7979]/80 hover:text-[#FD7979] transition-all duration-300 hover:scale-105 whitespace-nowrap"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden rounded-full p-2 bg-white/60 text-[#FD7979] hover:bg-white/80 transition-all duration-300 hover:scale-110"
+                aria-label="Menu"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Mobile Menu Dropdown */}
+            {mobileMenuOpen && (
+              <div className="lg:hidden absolute top-full left-4 right-4 mt-2 rounded-3xl backdrop-blur-xl bg-white/95 border border-white/60 shadow-2xl py-3 px-4 space-y-2 animate-fadeIn">
+                <button 
+                  onClick={() => { setTncOpen(true); setMobileMenuOpen(false); }} 
+                  className="w-full text-left px-4 py-2.5 text-sm font-semibold text-[#FD7979]/80 hover:text-[#FD7979] hover:bg-[#FD7979]/5 rounded-full transition-all duration-300"
+                >
+                  TNC & Garansi
+                </button>
+
+                {CATALOG.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => { scrollToId(s.id); setMobileMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm font-semibold text-[#FD7979]/80 hover:text-[#FD7979] hover:bg-[#FD7979]/5 rounded-full transition-all duration-300"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             )}
 
-            <button
-              onClick={() => {
-                setSearchOpen((v) => !v);
-                if (searchOpen) setQuery("");
-              }}
-              className="text-[#FD7979] hover:text-[#FD7979]/80 transition-all duration-300 hover:scale-110 p-2 -m-2"
-              aria-label="Search"
-              title="Search"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            {/* Search Area */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+              <div 
+                className={`transition-all duration-500 ${
+                  searchOpen ? 'flex-1 opacity-100 scale-100' : 'w-0 opacity-0 scale-95'
+                }`}
               >
-                <path
-                  d="M10.5 18.5C14.6421 18.5 18 15.1421 18 11C18 6.85786 14.6421 3.5 10.5 3.5C6.35786 3.5 3 6.85786 3 11C3 15.1421 6.35786 18.5 10.5 18.5Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M21 21L16.65 16.65"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
+                {searchOpen && (
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Cari aplikasi..."
+                    className="w-full rounded-full bg-white/60 px-4 sm:px-6 py-2.5 text-sm sm:text-base text-gray-800 placeholder:text-gray-500 outline-none border-2 border-transparent focus:border-[#FD7979]/30 transition-all duration-300"
+                    autoFocus
+                  />
+                )}
+              </div>
+
+              <button
+                onClick={handleSearchToggle}
+                className={`flex-shrink-0 rounded-full p-2.5 transition-all duration-300 hover:scale-110 ${
+                  searchOpen 
+                    ? 'bg-[#FD7979] text-white hover:bg-[#FD7979]/90' 
+                    : 'bg-white/60 text-[#FD7979] hover:bg-white/80'
+                }`}
+                aria-label="Search"
+                title={searchOpen ? "Close Search" : "Open Search"}
+              >
+                {searchOpen ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M10.5 18.5C14.6421 18.5 18 15.1421 18 11C18 6.85786 14.6421 3.5 10.5 3.5C6.35786 3.5 3 6.85786 3 11C3 15.1421 6.35786 18.5 10.5 18.5Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M21 21L16.65 16.65"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* HERO SECTION - Full Screen */}
-      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-20">
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#FD7979]/10 via-transparent to-[#FFCDC9]/20 animate-pulse" style={{ animationDuration: '4s' }} />
         
@@ -145,13 +309,13 @@ export default function Home() {
 
         {/* Hero Content */}
         <div className="relative z-10 text-center space-y-6 max-w-4xl">
-          <h1 className="text-7xl md:text-8xl font-extrabold text-[#FD7979] tracking-tight drop-shadow-lg animate-fade-in">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-[#FD7979] tracking-tight drop-shadow-lg animate-fade-in">
             Deepna Store
           </h1>
-          <p className="text-2xl md:text-3xl text-[#FD7979]/90 font-medium drop-shadow-md">
+          <p className="text-xl sm:text-2xl md:text-3xl text-[#FD7979]/90 font-medium drop-shadow-md">
             Jual Aplikasi Premium Terpercaya
           </p>
-          <p className="text-lg text-[#FD7979]/70 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-[#FD7979]/70 max-w-2xl mx-auto px-4">
             Dapatkan aplikasi premium dengan harga terbaik dan garansi terjamin
           </p>
           
@@ -159,7 +323,7 @@ export default function Home() {
           <div className="pt-6">
             <button
               onClick={() => scrollToId(CATALOG[0]?.id || 'catalog')}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-[#FD7979] text-white rounded-full font-semibold text-lg shadow-2xl hover:bg-[#FD7979]/90 transition-all duration-300 hover:scale-105 hover:shadow-3xl"
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-[#FD7979] text-white rounded-full font-semibold text-base sm:text-lg shadow-2xl hover:bg-[#FD7979]/90 transition-all duration-300 hover:scale-105 hover:shadow-3xl"
             >
               Lihat Katalog
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -172,39 +336,87 @@ export default function Home() {
 
       {/* CATALOG SECTIONS */}
       <div className="mx-auto max-w-6xl px-6 pb-20 space-y-16">
-        {filteredCatalog.map((section, idx) => (
-          <section 
-            key={section.id} 
-            id={section.id} 
-            className="pt-8 scroll-mt-20"
-            style={{ 
-              animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both` 
-            }}
-          >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="h-1 w-12 bg-gradient-to-r from-[#FD7979] to-[#FFCDC9] rounded-full" />
-              <h2 className="text-3xl font-bold text-[#FD7979] tracking-tight">
-                {section.label}
-              </h2>
+        {filteredCatalog.length === 0 && query.trim() ? (
+          <div className="pt-20 pb-10 text-center">
+            <div className="inline-block p-8 rounded-3xl bg-white/60 backdrop-blur-sm border border-[#FD7979]/20 shadow-xl">
+              <svg className="mx-auto mb-4 w-16 h-16 text-[#FD7979]/40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L16.65 16.65M10.5 18.5C14.6421 18.5 18 15.1421 18 11C18 6.85786 14.6421 3.5 10.5 3.5C6.35786 3.5 3 6.85786 3 11C3 15.1421 6.35786 18.5 10.5 18.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <h3 className="text-2xl font-bold text-[#FD7979] mb-2">Belum ada yang kamu cari</h3>
+              <p className="text-[#FD7979]/70">Coba kata kunci lain atau lihat semua katalog kami</p>
+              <button
+                onClick={() => setQuery("")}
+                className="mt-4 px-6 py-2.5 bg-[#FD7979] text-white rounded-full font-semibold text-sm hover:bg-[#FD7979]/90 transition-all duration-300 hover:scale-105 shadow-lg"
+              >
+                Lihat Semua Aplikasi
+              </button>
             </div>
+          </div>
+        ) : (
+          filteredCatalog.map((section, idx) => (
+            <section 
+              key={section.id} 
+              id={section.id} 
+              className="pt-8 scroll-mt-20"
+              style={{ 
+                animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both` 
+              }}
+            >
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-1 w-12 bg-gradient-to-r from-[#FD7979] to-[#FFCDC9] rounded-full" />
+                <h2 className="text-3xl font-bold text-[#FD7979] tracking-tight">
+                  {section.label}
+                </h2>
+              </div>
 
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {section.items.map((it, itemIdx) => (
-                <button
-                  key={it.name}
-                  onClick={() => setActiveItem(it)}
-                  className="group relative rounded-2xl bg-white/80 backdrop-blur-sm px-5 py-6 text-center text-sm font-semibold text-gray-800 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-white border border-white/50 hover:border-[#FD7979]/30"
-                  style={{ 
-                    animation: `fadeInUp 0.4s ease-out ${itemIdx * 0.05}s both` 
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#FD7979]/0 to-[#FD7979]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="relative z-10">{it.name}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-        ))}
+              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {section.items.map((it, itemIdx) => {
+                  const logoUrl = getLogoUrl(it.name);
+                  
+                  return (
+                    <button
+                      key={it.name}
+                      onClick={() => setActiveItem(it)}
+                      className="group relative rounded-2xl bg-white/80 backdrop-blur-sm px-4 py-6 text-center text-sm font-semibold text-gray-800 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-white border border-white/50 hover:border-[#FD7979]/30 flex flex-col items-center gap-3"
+                      style={{ 
+                        animation: `fadeInUp 0.4s ease-out ${itemIdx * 0.05}s both` 
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#FD7979]/0 to-[#FD7979]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      {/* Logo */}
+                      <div className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl bg-white/60 p-2 group-hover:bg-white transition-colors duration-300">
+                        {logoUrl ? (
+                          <img 
+                            src={logoUrl} 
+                            alt={it.name}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              // Fallback to first letter if logo fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="w-full h-full items-center justify-center text-2xl font-bold text-[#FD7979]"
+                          style={{ display: logoUrl ? 'none' : 'flex' }}
+                        >
+                          {it.name.charAt(0).toUpperCase()}
+                        </div>
+                      </div>
+                      
+                      {/* App Name */}
+                      <span className="relative z-10 capitalize leading-tight">{it.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))
+        )}
       </div>
 
       {/* POPUP: TNC & GARANSI */}
