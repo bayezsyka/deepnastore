@@ -137,7 +137,19 @@ export default function Home() {
     const newSearchState = !searchOpen;
     setSearchOpen(newSearchState);
     
-    if (!newSearchState) {
+    if (newSearchState) {
+      // Ketika search dibuka, scroll ke catalog section agar buyer bisa lihat hasil
+      setTimeout(() => {
+        const firstCatalog = CATALOG[0];
+        if (firstCatalog) {
+          const catalogEl = document.getElementById(firstCatalog.id);
+          if (catalogEl) {
+            catalogEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+      }, 100);
+    } else {
+      // Ketika search ditutup, clear query
       setQuery("");
     }
   };
