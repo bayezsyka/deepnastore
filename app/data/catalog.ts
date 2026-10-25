@@ -1,4 +1,9 @@
-export type CatalogItem = { name: string; priceText: string };
+export type CatalogItem = { 
+  id?: number;
+  name: string; 
+  priceText: string;
+  logoUrl?: string | null;
+};
 export type CatalogSection = { id: string; label: string; items: CatalogItem[] };
 
 // Auto-generated from Padlet_deepna_store_rapih.xlsx (Sheet1)
